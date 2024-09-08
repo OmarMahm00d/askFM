@@ -1,0 +1,50 @@
+1,1,24,What is the capital of France?,,1,201,12,Where is the Eiffel Tower located?,In Paris France
+2,1,13,How many continents are there?,7,1,202,5,What is the largest continent?,Asia
+3,8,1,What is the speed of light?,299792 km/s,1,203,8,How fast does light travel?,At 299792 km/s
+4,15,1,Who wrote Hamlet?,,1,204,15,Who is the author of Macbeth?,William Shakespeare
+5,7,30,What is the boiling point of water?,,1,205,7,At what temperature does water boil?,At 100°C
+6,3,25,What is the square root of 16?,,1,206,3,How do you calculate the square root of 16?,It is 4
+7,9,19,Who discovered penicillin?,Alexander Fleming,1,207,9,Who is credited with the discovery of penicillin?,Alexander Fleming
+8,20,11,What is the chemical symbol for water?,,1,208,20,What does H2O stand for?,Water
+9,14,26,What is the largest planet in the Solar System?,,1,209,14,Which planet is the biggest?,Jupiter
+10,1,6,What year did World War II end?,1945,1,210,1,When did WWII conclude?,In 1945
+11,11,28,Who painted the Mona Lisa?,Leonardo da Vinci,1,211,11,Who is the artist behind the Mona Lisa?,Leonardo da Vinci
+12,13,9,What is the freezing point of water?,0°C,1,212,13,At what temperature does water freeze?,At 0°C
+13,16,21,How many bones are in the human body?,206,1,213,16,What is the total number of bones in an adult human?,206 bones
+14,22,5,What is the tallest mountain in the world?,Mount Everest,1,214,22,Which mountain is the highest?,Mount Everest
+15,4,29,What is the largest mammal?,Blue whale,1,215,4,Which is the largest mammal on Earth?,The blue whale
+16,18,2,What is the most abundant gas in Earth's atmosphere?,Nitrogen,1,216,18,Which gas makes up most of the Earth's atmosphere?,Nitrogen
+17,10,31,What is the currency of Japan?,Yen,1,217,10,What is Japan's currency?,The yen
+18,21,3,Who invented the telephone?,Alexander Graham Bell,1,218,21,Who is credited with inventing the telephone?,Alexander Graham Bell
+19,23,7,What is the smallest country in the world?,Vatican City,1,219,23,Which country has the smallest land area?,Vatican City
+20,17,15,What is the hardest natural substance?,Diamond,1,220,17,What is the hardest material found in nature?,Diamond
+21,25,32,What is the main ingredient in guacamole?,Avocado,1,221,25,What fruit is the primary ingredient in guacamole?,Avocado
+22,6,12,What is the atomic number of carbon?,6,1,222,6,What is the atomic number for carbon?,6
+23,19,4,What is the most spoken language in the world?,Mandarin Chinese,1,223,19,Which language has the most native speakers?,Mandarin Chinese
+24,2,27,What is the square of 9?,81,1,224,2,What is 9 multiplied by itself?,81
+25,30,8,Who wrote 1984?,George Orwell,1,225,30,Who is the author of the book 1984?,George Orwell
+26,12,16,What is the powerhouse of the cell?,Mitochondria,1,226,12,Which organelle is known as the powerhouse of the cell?,The mitochondria
+27,9,14,What is the smallest unit of life?,Cell,1,227,9,What is the basic building block of living organisms?,The cell
+28,27,10,What is the capital of Japan?,Tokyo,1,228,27,Which city is the capital of Japan?,Tokyo
+29,24,20,What is the value of pi?,3.14159,1,229,24,What is the numerical value of pi?,Approximately 3.14159
+30,32,18,What is the main gas in the sun?,Hydrogen,1,230,32,Which gas is most abundant in the sun?,Hydrogen
+31,7,1,What is the primary color of the sky?,Blue,1,231,7,What color is the sky most of the time?,Blue
+32,26,13,What is the chemical formula for table salt?,NaCl,1,232,26,What is the chemical composition of salt?,NaCl
+33,5,17,Who is known as the father of physics?,Isaac Newton,1,233,5,Which scientist is considered the father of classical physics?,Isaac Newton
+34,29,19,What is the name of the longest river in the world?,Nile,1,234,29,Which river is the longest on Earth?,The Nile
+35,1,23,What is the chemical symbol for gold?,Au,1,235,1,What is the abbreviation for gold on the periodic table?,Au
+36,28,22,What is the most common element in the universe?,Hydrogen,1,236,28,Which element is most prevalent in the cosmos?,Hydrogen
+37,3,30,What is the scientific name for humans?,Homo sapiens,1,237,3,What is the biological term for humans?,Homo sapiens
+38,11,24,What is the boiling point of nitrogen?,-196°C,1,238,11,At what temperature does nitrogen boil?,At -196°C
+39,20,26,What is the capital city of Australia?,Canberra,1,239,20,Which city is the capital of Australia?,Canberra
+40,16,11,What is the smallest particle of an element?,Atom,1,240,16,What is the fundamental unit of matter?,The atom
+41,13,25,What is the longest bone in the human body?,Femur,1,241,13,Which bone is the longest in a human?,The femur
+42,31,6,What is the process by which plants make food?,Photosynthesis,1,242,31,How do plants convert sunlight into energy?,Through photosynthesis
+43,4,21,What is the closest star to Earth?,The Sun,1,243,4,Which star is nearest to our planet?,The Sun
+44,15,29,What is the capital of Italy?,Rome,1,244,15,Which city is the capital of Italy?,Rome
+45,8,28,What is the largest ocean on Earth?,Pacific Ocean,1,245,8,Which ocean covers the most surface area?,The Pacific Ocean
+46,18,32,What is the first element on the periodic table?,Hydrogen,1,246,18,Which element is first in the periodic table?,Hydrogen
+47,17,2,What is the square root of 64?,8,1,247,17,What is the value when you take the square root of 64?,8
+48,22,15,What is the name of the galaxy we live in?,Milky Way,1,248,22,In which galaxy is our solar system located?,The Milky Way
+49,10,9,What is the largest desert in the world?,Sahara,1,249,10,Which desert is the largest on the planet?,The Sahara Desert
+50,14,27,What is the chemical symbol for silver?,Ag,2,250,14,What is the abbreviation for silver in chemistry?,Ag,1000,5,Hello there I see another Ahmed Zewail comming, thank you! 
