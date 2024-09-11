@@ -133,15 +133,15 @@ struct DataBase
         return true;
     }
 
-    auto get_user_line_by_user_name(const std::string &user_name)
+    auto get_user_info_by_user_name(const std::string &user_name)
     {
-        pair<bool, tuple<int, string, string, string, string, bool>> output = make_pair(0, make_tuple(-1, "", "", "", "", 0));
+        pair<bool, tuple<int, string, string, string, string, bool>> requested_info = make_pair(0, make_tuple(-1, "", "", "", "", 0));
         read.open(users_path);
 
         if (read.fail())
         {
             cout << "Error: can't open file. " << endl;
-            return output;
+            return requested_info;
         }
 
         string line;
@@ -167,34 +167,33 @@ struct DataBase
             if (read.bad())
             {
                 cout << "Error: error in reading attributes.\n";
-                return output;
+                return requested_info;
             }
 
-            output = make_pair(true, make_tuple(attr1, attr2_uname, attr3, attr4, attr5, attr6));
+            requested_info = make_pair(true, make_tuple(attr1, attr2_uname, attr3, attr4, attr5, attr6));
             break;
         }
 
         read.close();
-        return output;
+        return requested_info;
     }
 
     // questions manipulation functions
-    bool add_new_question_line(tuple<int, int, int, string> new_data)
+    bool add_new_question_line(const int & q_id, const int & from_uid, const int & to_uid, const string & question)
     {
-        auto &[id, from, to, question] = new_data;
         string ans{""};
         int t_num = 0;
 
-        write.open(questions_path);
+        write.open(questions_path, ios::app);
         if (write.fail())
         {
             cout << "Error: can't open file.\n";
             return false;
         }
 
-        write << id << "," << from << "," << to << "," << question << "," << ans << "," << t_num << endl;
+        write << q_id << "," << from_uid << "," << to_uid << "," << question << "," << ans << "," << t_num << endl;
 
-        if (write.fail())
+        if (write.bad())
         {
             cout << "Error: error in writing on file.\n";
             return false;
@@ -204,7 +203,7 @@ struct DataBase
         return true;
     }
 
-    bool store_new_thread(const int &line_num, tuple<int, int, string, string> thrd)
+    bool store_new_thread(const int & qid, const tuple<int, int, string, string>& thrd)
     {
         // logic of updating question
         return true;
@@ -216,27 +215,27 @@ struct DataBase
         return true;
     }
 
-    bool delete_question_line(const int & id)
+    bool delete_question_line(const int &id)
     {
         // logic of deleting
         return true;
     }
 
-    bool delete_thread(const int& parent_q_id, const int& thrd_id)
+    bool delete_thread(const int &parent_q_id, const int &thrd_id)
     {
-        //logic of deleting thread
+        // logic of deleting thread
         return true;
     }
 };
 
 struct User_Info
 {
-    int user_id = -1;
-    string user_name = "";
-    string password = "";
-    string name = "";
-    string email = "";
-    bool AQ = false;
+    int user_id{-1};
+    string user_name{""};
+    string password{""};
+    string name{""};
+    string email{""};
+    bool AQ{false};
 
     User_Info() {}
 
@@ -261,30 +260,31 @@ struct User_Info
 
 struct Thread
 {
-    int ID;
-    int from_user_id;
-    string content;
-    string answer;
+    int ID{-1};
+    int from_user_id{-1};
+    string content{""};
+    string answer{""};
 
-    Thread(int id, int from, string content, string answer) : ID(id), from_user_id(from), content(content), answer(answer) {}
+    Thread(int id, int from, string content, string answer_question) : ID(id), from_user_id(from), content(content), answer(answer_question) {}
+
     void print()
     {
         cout << "Thread ID: " << ID << "\t";
         if (from_user_id != -1)
-            cout << "From User ID: " << from_user_id << "\t";
-        cout << "Question: " << content << endl;
+            cout << " From User ID: " << from_user_id << "\t";
+        cout << " Question: " << content << endl;
         if (answer != "")
-            cout << "Answer: " << answer << endl;
+            cout << "  Answer: " << answer << endl;
     }
 };
 
 struct Question
 {
-    int ID = -1;
-    int from_user_id = -1;
-    int to_user_id = -1;
-    string content = "";
-    string answer = "";
+    int ID{-1};
+    int from_user_id{-1};
+    int to_user_id{-1};
+    string content{""};
+    string answer{""};
     vector<Thread> threads;
 
     Question() {}
@@ -302,15 +302,16 @@ struct Question
     {
         cout << "Question ID: " << ID << "\t";
         if (from_user_id != -1)
-            cout << "From User ID: " << from_user_id << "\t";
-        cout << "To User ID: " << to_user_id << "\t";
-        cout << "Question: " << content << endl;
+            cout << " From User ID: " << from_user_id << "\t";
+        if (to_user_id != -1)
+            cout << " To User ID: " << to_user_id << "\t";
+        cout << " Question: " << content << endl;
         if (answer != "")
-            cout << "Answer: " << answer << endl;
+            cout << "  Answer: " << answer << endl;
         if (threads.size())
         {
             cout << "Threads: " << endl;
-            for (auto &thrd : threads)
+            for (auto &thrd : threads) // print threads
             {
                 thrd.print();
             }
@@ -321,16 +322,26 @@ struct Question
     {
         cout << "Question ID: " << ID << "\t";
         if (from_user_id != -1)
-            cout << "From User ID: " << from_user_id << "\t";
-        cout << "To User ID: " << to_user_id << "\t";
-        cout << "Question: " << content << endl;
+            cout << " From User ID: " << from_user_id << "\t";
+        if (to_user_id != -1)
+            cout << " To User ID: " << to_user_id << "\t";
+        cout << " Question: " << content << endl;
         if (answer != "")
-            cout << "Answer: " << answer << endl;
+            cout << "  Answer: " << answer << endl;
     }
 
-    void new_thread(const Thread &thrd)
+    void push_thread(const Thread &thrd)
     {
         threads.push_back(thrd);
+    }
+
+    void delete_thread(const int& index)
+    {
+        auto it = threads.begin();
+        it += index;
+        threads.erase(it);
+        
+        return;
     }
 };
 
@@ -342,6 +353,7 @@ struct Server
     set<string> user_names;
     vector<User_Info> users_info;
     vector<Question> questions;
+
     Server()
     {
         vector<tuple<int, string, string, string, string, bool>> users_data;
@@ -381,9 +393,12 @@ struct Server
 
             questions.push_back(question);
             qIDs.insert(qid);
+            for(auto& t : threads)
+                qIDs.insert(get<0> (t));
         }
     }
 
+    // user functions
     int gen_user_id()
     {
         int i = 0;
@@ -397,6 +412,94 @@ struct Server
         return i;
     }
 
+    void push_back_user_info(tuple<int, string, string, string, string, bool> &record)
+    {
+        users_info.push_back(User_Info(record));
+    }
+
+    bool add_user(tuple<string, string, string, string, bool> &info)
+    {
+        // generate new id for new user
+        int new_id = gen_user_id();
+        auto new_record = tuple_cat(make_tuple(new_id), info);
+
+        // store in Database
+        if (!db.store_user(new_record))
+            return false;
+
+        // update server information
+        push_back_user_info(new_record);
+
+        return true;
+    }
+
+    auto insert_new_thread(const int &qid, const int & from_usr_id, const int & to_usr_id, const string& question)
+    {
+        int sz = questions.size();
+        for(int i = 0; i < sz; i++)
+        {
+            if(questions[i].ID == qid)
+            {
+                int new_id = gen_question_id();
+
+                if(!db.store_new_thread(qid, make_tuple(new_id, to_usr_id, question, "")))
+                {
+                    qIDs.erase(new_id);
+                    return make_pair(false, -1);
+                }
+
+                questions[i].threads.push_back(Thread(qid, to_usr_id, question, ""));
+
+                return make_pair(true, qid);
+            }
+        }
+
+        cout << "Error: Cannot find thread id." << endl;
+        return make_pair(false, -1);
+    }
+
+    bool check_user_name(const string &user_name)
+    {
+        auto [it, is_inserted] = user_names.insert(user_name);
+        if (is_inserted)
+            return 1;
+        return 0;
+    }
+
+    pair<bool, User_Info> authentication(const string &user_name, const string &password)
+    {
+        // return is_authenticated, matched_user_info
+        pair<bool, tuple<int, string, string, string, string, bool>> info = db.get_user_info_by_user_name(user_name);
+        bool is_found = info.first;
+        tuple<int, string, string, string, string, bool> matched_record = info.second;
+
+        string selected_user_password = get<2>(matched_record);
+        if (is_found && (selected_user_password == password))
+        {
+            bool is_valid_login = true;
+            return make_pair(is_valid_login, User_Info(matched_record));
+        }
+
+        return make_pair(false, User_Info());
+    }
+
+    bool is_valid_user_id(int id)
+    {
+        return uIDs.count(id);
+    }
+
+    User_Info get_user_info_by_id(int id)
+    {
+        for (auto &usr_info : users_info)
+        {
+            if (usr_info.user_id == id)
+                return usr_info;
+        }
+        cout << "Erorr: unkown id\n";
+        return User_Info();
+    }
+
+    // question functions
     int gen_question_id()
     {
         int sz = qIDs.size();
@@ -411,58 +514,9 @@ struct Server
         return sz;
     }
 
-    bool check_user_name(const string &user_name)
+    bool is_valid_question_id(int id)
     {
-        auto [it, is_inserted] = user_names.insert(user_name);
-        if (is_inserted)
-            return 1;
-        return 0;
-    }
-
-    bool add_user(tuple<string, string, string, string, bool> &info)
-    {
-        int new_id = gen_user_id();
-        auto new_record = tuple_cat(make_tuple(new_id), info);
-
-        if (!db.store_user(new_record))
-            return false;
-
-        push_back_user_info(new_record);
-
-        return true;
-    }
-
-    void push_back_user_info(tuple<int, string, string, string, string, bool> &record)
-    {
-        users_info.push_back(User_Info(record));
-    }
-
-    pair<bool, User_Info> authentication(const string &user_name, const string &password)
-    {
-        // return is_authenticated, matched_user_info
-        pair<bool, tuple<int, string, string, string, string, bool>> info = db.get_user_line_by_user_name(user_name);
-        bool is_found = info.first;
-        tuple<int, string, string, string, string, bool> matched_record = info.second;
-
-        string selected_user_password = get<2>(matched_record);
-        if (is_found && (selected_user_password == password))
-        {
-            bool is_valid_login = true;
-            return make_pair(is_valid_login, User_Info(matched_record));
-        }
-
-        return make_pair(false, User_Info());
-    }
-
-    User_Info get_user_info_by_id(int id)
-    {
-        for (auto &usr_info : users_info)
-        {
-            if (usr_info.user_id == id)
-                return usr_info;
-        }
-        cout << "Erorr: unkown id\n";
-        return User_Info();
+        return qIDs.count(id);
     }
 
     Question get_question_by_index(const int &index)
@@ -511,18 +565,38 @@ struct Server
         return -1;
     }
 
-    bool new_thread(const int &qid, const Thread &thrd)
+    bool get_sent_recieved_questions(int uid, vector<Question> &sent, vector<Question> &recieved)
     {
-        int i = get_question_index(qid);
-
-        if(!db.store_new_thread(i, make_tuple(thrd.ID, thrd.from_user_id, thrd.content, "")));
+        bool is_vaild_uid = is_valid_user_id(uid);
+        if (!is_vaild_uid)
             return false;
-        
-        questions[i].new_thread(thrd);
+
+        auto user_info = get_user_info_by_id(uid);
+
+        int sz = questions.size();
+        for (int i = 0; i < sz; i++)
+        {
+            Question q = questions[i];
+            if (q.from_user_id == uid)
+            {
+                if (user_info.AQ)
+                    q.from_user_id = -1; // hide user
+
+                sent.push_back(q);
+            }
+
+            if (q.to_user_id == uid)
+            {
+                if (user_info.AQ)
+                    q.to_user_id = -1; // hide user
+
+                recieved.push_back(q);
+            }
+        }
         return true;
     }
 
-    bool answer(const string &ans, const int &qid)
+    bool answer_question(const string &ans, const int &qid)
     {
         for (auto &q : questions)
         {
@@ -530,6 +604,7 @@ struct Server
             {
                 q.answer = ans;
 
+                // update answers
                 vector<tuple<int, int, string, string>> rq_thread_tuples;
                 for (auto &thread : q.threads)
                 {
@@ -546,105 +621,105 @@ struct Server
         return false;
     }
 
-    bool get_sent_recieved_questions(int uid, vector<Question> &sent, vector<Question> &recieved)
+    auto insert_new_question(int from, int to, string question)
     {
-        bool is_vaild_uid = uIDs.count(uid);
-        if (!is_vaild_uid)
+        // generate new id for new question
+        int new_id = gen_question_id();
+
+        // store in DataBase
+        bool is_stored = db.add_new_question_line(new_id, from, to, question);
+        
+        if (!is_stored){
+            qIDs.erase(new_id);
+            return make_pair(false, -1);
+        }
+            
+        // add the new question to the server
+        vector<Thread> threads;                                                 // initialize emtpy threads
+        questions.push_back(Question(new_id, from, to, question, "", threads)); // add the new question to the server questions
+
+        return make_pair(true, new_id);
+    }
+
+    bool delete_parent_question(const int& question_index){
+        int q_id = questions[question_index].ID;
+
+        vector<int> thrd_ids; //a copy for thread ids of parent question
+        thrd_ids.push_back(q_id);// push the question id to the list
+
+        if (!db.delete_question_line(q_id)) //remove from the database
+                   return false;
+        
+        //remove from server
+        for (auto &thread : questions[question_index].threads) // collect all thread ids to free them
+                    thrd_ids.push_back(thread.ID);
+
+        //Erase question       
+        auto it = questions.begin();
+        it += question_index;       
+        questions.erase(it);
+
+        // free the ids
+        for (auto &i : thrd_ids)
+        {
+            auto id_it = qIDs.find(i);
+            qIDs.erase(id_it);
+        }
+
+        return true;
+    }
+    
+    bool delete_thread_question(const int& question_index, const int& thread_index)
+    {
+        int parent_question_id = questions[question_index].ID;
+        int thread_question_id = questions[question_index].threads[thread_index].ID;
+        // delete from the database
+        if (!db.delete_thread(parent_question_id, thread_question_id))
             return false;
 
+        // delete from the server
+        questions[question_index].delete_thread(thread_index); // delete thread question
+        
+        // free id for deleted thread
+        auto id_it = qIDs.find(thread_question_id);
+        qIDs.erase(id_it);
+
+        return true;  
+    }
+    
+    bool delete_question(const int& question_id)
+    {
+        vector<int> ids;
+        
+        //iterate over all questions and threads
         int sz = questions.size();
         for (int i = 0; i < sz; i++)
         {
-            Question q = questions[i];
-            if (q.from_user_id == uid)
+            if (questions[i].ID == question_id)// if id for a parent question
             {
-                sent.push_back(q);
-            }
-            else if (q.to_user_id == uid)
-            {
-                recieved.push_back(q);
-            }
-        }
-
-        return true;
-    }
-
-    bool is_valid_user_id(int id)
-    {
-        return uIDs.count(id);
-    }
-
-    bool is_valid_question_id(int id)
-    {
-        return qIDs.count(id);
-    }
-
-    bool new_question(int from, int to, string question)
-    {
-        //generate new id for new question
-        int new_id = gen_question_id();
-
-        //store in DataBase
-        tuple<int, int, int, string> new_tuple;
-        bool is_stored = db.add_new_question_line(new_tuple);
-        if (!is_stored)
-            return false;
-
-        //add the new question to the server
-        vector<Thread> threads;//initialize emtpy threads
-        questions.push_back(Question(new_id, from, to, question, "", threads));//add the new question to the server questions
-
-        return true;
-    }
-
-    bool delete_question_by_id(int id)
-    {
-        int index = 0;
-        vector<int> ids;
-        for (auto it = questions.begin(); it != questions.end();)
-        {
-            if ((*it).ID == id)
-            {
-                // delete the question
-
-                //from the database
-                if(!db.delete_question_line(id))
-                    return false;
-
-                //from the server
-                for(auto& i : (*it).threads)//collect all thread ids to free them
-                    ids.push_back(i.ID);
-                questions.erase(it);
-                //free the ids
-                for(auto& i : ids){
-                    auto id_it = qIDs.find(i);
-                    qIDs.erase(id_it);
-                }
-                
-                return true;
-            }
-
-            for (auto t_it = (*it).threads.begin(); t_it != (*it).threads.end();)
-            {
-                if ((*t_it).ID == id)
+                if(!delete_parent_question(i))
                 {
-                    // delete the thread question
-
-                    //from the database
-                    if(!db.delete_thread((*it).ID, id))
-                        return false;
-
-                    //from the server
-                    (*it).threads.erase(t_it);//delete question
-                    //free id for new questions
-                    auto id_it = qIDs.find(id);
-                    qIDs.erase(id_it);
-                    return true;
+                    cout << "Can't delete the question." << endl;
+                    return false;
                 }
+                else
+                    return true;
             }
-            it++;
+
+            // if id for thread question
+            int t_sz = questions[i].threads.size();
+            for (int j = 0; j < t_sz; j++)
+            {
+                if (!delete_thread_question(i, j)) // if id for a thread question
+                {
+                    cout << "Can't delete the thread" << endl;
+                    return false;
+                }
+                else
+                    return true;
+            }
         }
-        cout << "Erorr: Cannot delete question." << endl;
+        cout << "Error: unable to extract question from id." << endl;
         return false;
     }
 };
@@ -656,12 +731,54 @@ struct User
     vector<Question> received_questions;
 
     User() {}
-    User(User_Info u) : info(u)
-    {
+    User(User_Info u, vector<Question> sent_q, vector<Question> received_q) : info(u), sent_questions(sent_q), received_questions(received_q) {}
+
+    Question get_recieved_question_by_id(const int& id){
+        for(auto& q : received_questions)
+        {
+            if(q.ID == id)
+                return q;
+            
+            for(auto& t : q.threads)
+            {
+                if (t.ID == id)
+                    return q;              
+            }
+        }
+        return Question();
     }
 
+    bool delete_recieved_question(const int& qid) 
+    {
+        //iterate over all questions and threads
+        int sz = received_questions.size();
+        for (int i = 0; i < sz; i++)
+        { 
+            if (received_questions[i].ID == qid) // if id for a parent question
+            {     
+                auto it = received_questions.begin();
+                it += i;       
+                received_questions.erase(it);
+                return true;
+            }
+            
+            int t_sz = received_questions[i].threads.size();
+            for (int j = 0; j < t_sz; j++)
+            {
+                if(received_questions[i].threads[j].ID == qid) // if id for thread question
+                {
+                    received_questions[i].delete_thread(j);
+                    return true;
+                }
+            }
+        }
+        cout << "Error: unable to extract question from id." << endl;
+        return false;
+    }
+   
     bool answer(const string &ans, const int &qid)
     {
+        // iterate over the questions
         for (auto &recieved_q : received_questions)
         {
             if (recieved_q.ID == qid)
@@ -669,11 +786,50 @@ struct User
                 recieved_q.answer = ans;
                 return true;
             }
+
+            // iterate over the threads of a question
+            for (auto &thrd : recieved_q.threads)
+            {
+                if (thrd.ID == qid)
+                {
+                    thrd.answer = ans;
+                    return true;
+                }
+            }
         }
         cout << "Erorr: can not find the question in the recieved list." << endl;
         return false;
     }
+
+    void send_new_question(const int& reciever_id, const int& question_id, const string& question){
+        vector<Thread> empty_threads; // initialize empty vector of threads
+        
+        //hide user
+        int user_id = info.user_id;
+        if(info.AQ)
+            user_id = -1;
+        sent_questions.push_back(Question(question_id, user_id, reciever_id, question, "", empty_threads));
+    }
+
+    void send_new_thread(const int & thread_id, const int & parent_question_id, const string & question)
+    {
+        for(auto& q : sent_questions)
+        {
+            if(q.ID == parent_question_id)
+            {
+                //hide user
+                int uid = info.user_id;
+                if(info.AQ)
+                    uid = -1;
+                    
+                q.threads.push_back(Thread(thread_id, uid, question, ""));
+                return;
+            }
+        }
+        cout << "Error: no sent question has this id." << endl;
+    }
 };
+
 struct System
 {
     Server s;
@@ -699,9 +855,11 @@ struct System
                 {
                     while (1) // loop until user entered a valid username and password
                     {
+                        string uname, passwd;
                         cout << "Enter username and password: ";
+                        cin >> uname >> passwd;
 
-                        auto [is_valid, user_info] = login();
+                        auto [is_valid, user_info] = s.authentication(uname, passwd);
 
                         if (!is_valid)
                         {
@@ -709,8 +867,10 @@ struct System
                             continue;
                         }
 
-                        u = User(user_info);
-                        s.get_sent_recieved_questions(u.info.user_id, u.sent_questions, u.received_questions);
+                        vector<Question> sent_questions;
+                        vector<Question> recieved_questions;
+                        s.get_sent_recieved_questions(user_info.user_id, sent_questions, recieved_questions);
+                        u = User(user_info, sent_questions, recieved_questions); // load user data
                         cout << "Login successfully.\n";
                         main_menu();
                         break;
@@ -733,6 +893,7 @@ struct System
             }
         }
     }
+
     void signup()
     {
         string u_name, passwd, name, email;
@@ -768,13 +929,7 @@ struct System
 
         cout << "signup failed.\n";
     }
-    pair<bool, User_Info> login()
-    {
-        string name, passwd;
-        cin >> name >> passwd;
 
-        return s.authentication(name, passwd);
-    }
     void main_menu()
     {
         while (1)
@@ -792,31 +947,62 @@ struct System
             int choice;
             cout << "Enter Number from list: ";
             cin >> choice;
-
-            if (choice == 1)
-                print_questions_to_me();
-            else if (choice == 2)
-                print_questions_from_me();
-            else if (choice == 3)
-                answer_question();
-            else if (choice == 4)
-                delete_question();
-            else if (choice == 5)
-                ask_question();
-            else if (choice == 6)
-                list_system_users();
-            else if (choice == 7)
-                feed();
-            else if (choice == 8)
+    
+            switch (choice)
             {
-                cout << "Logout, You will prompt back to login Menu.\n"
-                     << endl;
-                break;
+                case 1:
+                {
+                    print_questions_to_me();
+                    break;
+                }
+                
+                case 2:
+                {
+                    print_questions_from_me();
+                    break;
+                }
+                
+                case 3:
+                {
+                    answer_question();
+                    break;
+                }
+                case 4:
+                {
+                    delete_question();
+                    break;
+                }
+                    
+                case 5:
+                {
+                    ask_question();
+                    break;
+                }
+                    
+                case 6:
+                {
+                    list_system_users();
+                    break;
+                }
+                    
+                case 7:
+                {
+                    feed();
+                    break;
+                }
+                    
+                case 8:
+                {
+                    cout << "Logout, You will prompt back to login Menu.\n"
+                        << endl;
+                    break;
+                }
+                default:
+                    cout << "Erorr: invalid Namber! Please choose from list." << endl;
             }
-            else
-                cout << "Erorr: invalid Namber! Please choose from list." << endl;
         }
     }
+
     void print_questions_to_me()
     {
         // iterate over recieved_questions and print them
@@ -826,17 +1012,19 @@ struct System
             cout << endl;
         }
     }
+
     void print_questions_from_me()
     {
         // iterate over sent_questions and print them
         for (auto &q : u.sent_questions)
         {
-            q.print();
+            q.print_without_thread();
             if (q.answer == "")
                 cout << "not answered yet\n";
             cout << endl;
         }
     }
+
     void answer_question()
     {
         int qid;
@@ -846,43 +1034,80 @@ struct System
         if (qid == -1)
             return;
 
-        Question q = s.get_question_by_id(qid);
+        Question q = u.get_recieved_question_by_id(qid);
 
         if (q.ID == -1)
+        {
+            cout << "Error: There is no revcieved question has ID (" << qid << ")." << endl;
             return;
+        }
 
-        q.print_without_thread();
-        cout << "\n";
+        if(q.ID == qid)
+        {
+            q.print_without_thread();
+            cout << "\n";
 
-        if (q.answer != "")
+            if (q.answer != "")
             cout << "note: Already answered. Answer will be apdated." << endl;
+        }
+        
+        else{
+            for(auto& t : q.threads)
+            {
+                if(t.ID == qid)
+                {
+                    cout << "parent question:\n";
+                    q.print_without_thread();
+                    t.print();
+                    cout << "\n";
 
+                    if (t.answer != "")
+                        cout << "note: Already answered. Answer will be updated." << endl;
+                }
+            }
+        }
+        
+
+        // prompt answer
         string answer{""};
         cout << "Enter Answer: ";
         cin.ignore();
         getline(cin, answer);
 
-        u.answer(answer, qid);
-        s.answer(answer, qid);
+        if (!u.answer(answer, qid)) // local answering
+            return;
+
+        if (!s.answer_question(answer, qid)) // global answering
+            cout << "Erorr: Answer does not updated globally\n";
     }
+
     void delete_question()
     {
         int qid{0};
         cout << "Enter Question ID: ";
         cin >> qid;
-        if (!s.is_valid_question_id(qid))
+
+        auto q = u.get_recieved_question_by_id(qid);
+        if (q.ID == -1)
         {
-            cout << "Invalid Question ID" << endl;
+            cout << "Error: There is no recieved question has the same id." << endl;
             return;
         }
-        s.delete_question_by_id(qid);
+
+        if(!s.delete_question(qid))
+            cout << "question is not deleted globally." << endl;
+        
+        if(!u.delete_recieved_question(qid))
+            cout << "question is not deleted locally." << endl;
     }
+
     void ask_question()
     {
-        int uid;
+        int to_uid;
         cout << "Enter user id or -1 to cencel: ";
-        cin >> uid;
-        if (!s.is_valid_user_id(uid))
+        cin >> to_uid;
+
+        if (!s.is_valid_user_id(to_uid))
         {
             cout << "Invalid user id" << endl;
             return;
@@ -891,13 +1116,20 @@ struct System
         int qid;
         cout << "For thread question: Enter question id or -1 for new question: ";
         cin >> qid;
+        cout << " Enter Question text: ";
+        string question;          
+        cin.ignore();
+        getline(cin, question);
 
-        if (qid == -1)
+        if (qid == -1)// if new parent question
         {
-            string question;
-            cout << " Enter Question text: ";
-            getline(cin, question);
-            s.new_question(u.info.user_id, uid, question);
+            auto[is_inserted, qid] = s.insert_new_question(u.info.user_id, to_uid, question); // add new question globally
+            if(is_inserted)
+                u.send_new_question(to_uid, qid, question);// add new question locally
+    
+            else
+                cout << "Error: New Question is not added." << endl; 
+            
             return;
         }
 
@@ -907,14 +1139,25 @@ struct System
             cout << "Erorr: Invalid question id.\n";
             return;
         }
+
+        auto[is_inserted, tid] = s.insert_new_thread(qid, u.info.user_id, to_uid, question);// insert global thread
+        if(is_inserted)
+        {
+            u.send_new_thread(tid, qid, question);// insert local thread
+            return;
+        }
+
+        cout << "Unable to insert thread." << endl;
     }
+
     void list_system_users()
     {
         for (auto &usr : s.users_info)
         {
-            cout << "Name: " << usr.user_name << "\t" << "ID: " << usr.user_id << endl;
+            cout << "Name: " << usr.name << "\t" << "ID: " << usr.user_id << endl;
         }
     }
+
     void feed()
     {
         for (int i = 0; i != -1; i++)
@@ -955,8 +1198,8 @@ struct System
 };
 int main()
 {
-    System sys1;
-    sys1.login_Menu();
+    System sys;
+    sys.login_Menu();
 
     return 0;
 }
