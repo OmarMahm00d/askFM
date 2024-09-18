@@ -48,3 +48,4 @@
 48,user48,pass48,Emily Bennett,emilyb48@example.com,0
 49,user49,pass49,Scott Hughes,scotth49@example.com,1
 50,user50,pass50,Angela Patterson,angelap50@example.com,0
+51,omar,wr,wdom o,m@.com,1

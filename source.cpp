@@ -4,7 +4,95 @@
 #include <set>
 #include <vector>
 #include <sstream>
+#include <limits>
+#include <cstring>
 using namespace std;
+
+struct Handling
+{
+    template <size_t N>
+    void hundle_word(char (&buffer)[N])
+    {
+        if (buffer[0] == 0)
+        {
+            throw invalid_argument("Error: cannot be empty!\n");
+        }
+
+        if (buffer[N-2] != 0)
+        {
+            throw length_error("Error: invalid input, too long!\n");
+        }
+
+        for (auto &i : buffer)
+        {
+            if (i == ' ')
+            {
+                throw invalid_argument("Error: invalid input, please do not use spaces.\n");
+            }
+        }
+    }
+
+    // Function to check the character
+    // is an alphabet or not
+    bool isChar(char c)
+    {
+        return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
+    }
+
+    // Function to check the character
+    // is an digit or not
+    bool isDigit(const char c)
+    {
+        return (c >= '0' && c <= '9');
+    }
+
+    template <size_t N>
+    void hundle_email(char (&buffer)[N])
+    {
+        //check the email address size
+        if (buffer[N-2] != 0)
+        {
+            throw length_error("Error: invalid email, too long!\n");
+        }
+
+        // Check the first character
+        // is an alphabet or not
+        if (!isChar(buffer[0]))
+            throw invalid_argument("Error: Invalid email.\n");
+
+        // Variable to store position
+        // of At and Dot
+        int At = -1, Dot = -1;
+        // Traverse over the email id
+        // string to find position of
+        // Dot and At
+        for (int i = 0; i < N; i++)
+        {
+            //if string is finished
+            if (buffer[i] == 0)
+                break;
+            // If the character is '@'
+            if (buffer[i] == '@')
+                At = i;
+
+            // If character is '.'
+            else if (buffer[i] == '.')
+                Dot = i;
+        }
+
+        // If At or Dot is not present
+        if (At == -1 || Dot == -1)
+            throw invalid_argument("Error: Invalid email.\n");
+
+        // If Dot is present before At
+        if (At > Dot)
+            throw invalid_argument("Error: Invalid email.\n");
+
+        // If Dot is present at the end
+        if (buffer[Dot+1] == 0)
+            throw invalid_argument("Error: Invalid email.\n");
+    }
+};
 
 struct DataBase
 
@@ -179,7 +267,7 @@ struct DataBase
     }
 
     // questions manipulation functions
-    bool add_new_question_line(const int & q_id, const int & from_uid, const int & to_uid, const string & question)
+    bool add_new_question_line(const int &q_id, const int &from_uid, const int &to_uid, const string &question)
     {
         string ans{""};
         int t_num = 0;
@@ -203,7 +291,7 @@ struct DataBase
         return true;
     }
 
-    bool store_new_thread(const int & qid, const tuple<int, int, string, string>& thrd)
+    bool store_new_thread(const int &qid, const tuple<int, int, string, string> &thrd)
     {
         // logic of updating question
         return true;
@@ -335,12 +423,12 @@ struct Question
         threads.push_back(thrd);
     }
 
-    void delete_thread(const int& index)
+    void delete_thread(const int &index)
     {
         auto it = threads.begin();
         it += index;
         threads.erase(it);
-        
+
         return;
     }
 };
@@ -393,8 +481,8 @@ struct Server
 
             questions.push_back(question);
             qIDs.insert(qid);
-            for(auto& t : threads)
-                qIDs.insert(get<0> (t));
+            for (auto &t : threads)
+                qIDs.insert(get<0>(t));
         }
     }
 
@@ -433,16 +521,16 @@ struct Server
         return true;
     }
 
-    auto insert_new_thread(const int &qid, const int & from_usr_id, const int & to_usr_id, const string& question)
+    auto insert_new_thread(const int &qid, const int &from_usr_id, const int &to_usr_id, const string &question)
     {
         int sz = questions.size();
-        for(int i = 0; i < sz; i++)
+        for (int i = 0; i < sz; i++)
         {
-            if(questions[i].ID == qid)
+            if (questions[i].ID == qid)
             {
                 int new_id = gen_question_id();
 
-                if(!db.store_new_thread(qid, make_tuple(new_id, to_usr_id, question, "")))
+                if (!db.store_new_thread(qid, make_tuple(new_id, to_usr_id, question, "")))
                 {
                     qIDs.erase(new_id);
                     return make_pair(false, -1);
@@ -628,12 +716,13 @@ struct Server
 
         // store in DataBase
         bool is_stored = db.add_new_question_line(new_id, from, to, question);
-        
-        if (!is_stored){
+
+        if (!is_stored)
+        {
             qIDs.erase(new_id);
             return make_pair(false, -1);
         }
-            
+
         // add the new question to the server
         vector<Thread> threads;                                                 // initialize emtpy threads
         questions.push_back(Question(new_id, from, to, question, "", threads)); // add the new question to the server questions
@@ -641,22 +730,23 @@ struct Server
         return make_pair(true, new_id);
     }
 
-    bool delete_parent_question(const int& question_index){
+    bool delete_parent_question(const int &question_index)
+    {
         int q_id = questions[question_index].ID;
 
-        vector<int> thrd_ids; //a copy for thread ids of parent question
-        thrd_ids.push_back(q_id);// push the question id to the list
+        vector<int> thrd_ids;     // a copy for thread ids of parent question
+        thrd_ids.push_back(q_id); // push the question id to the list
 
-        if (!db.delete_question_line(q_id)) //remove from the database
-                   return false;
-        
-        //remove from server
+        if (!db.delete_question_line(q_id)) // remove from the database
+            return false;
+
+        // remove from server
         for (auto &thread : questions[question_index].threads) // collect all thread ids to free them
-                    thrd_ids.push_back(thread.ID);
+            thrd_ids.push_back(thread.ID);
 
-        //Erase question       
+        // Erase question
         auto it = questions.begin();
-        it += question_index;       
+        it += question_index;
         questions.erase(it);
 
         // free the ids
@@ -668,8 +758,8 @@ struct Server
 
         return true;
     }
-    
-    bool delete_thread_question(const int& question_index, const int& thread_index)
+
+    bool delete_thread_question(const int &question_index, const int &thread_index)
     {
         int parent_question_id = questions[question_index].ID;
         int thread_question_id = questions[question_index].threads[thread_index].ID;
@@ -679,25 +769,25 @@ struct Server
 
         // delete from the server
         questions[question_index].delete_thread(thread_index); // delete thread question
-        
+
         // free id for deleted thread
         auto id_it = qIDs.find(thread_question_id);
         qIDs.erase(id_it);
 
-        return true;  
+        return true;
     }
-    
-    bool delete_question(const int& question_id)
+
+    bool delete_question(const int &question_id)
     {
         vector<int> ids;
-        
-        //iterate over all questions and threads
+
+        // iterate over all questions and threads
         int sz = questions.size();
         for (int i = 0; i < sz; i++)
         {
-            if (questions[i].ID == question_id)// if id for a parent question
+            if (questions[i].ID == question_id) // if id for a parent question
             {
-                if(!delete_parent_question(i))
+                if (!delete_parent_question(i))
                 {
                     cout << "Can't delete the question." << endl;
                     return false;
@@ -733,39 +823,40 @@ struct User
     User() {}
     User(User_Info u, vector<Question> sent_q, vector<Question> received_q) : info(u), sent_questions(sent_q), received_questions(received_q) {}
 
-    Question get_recieved_question_by_id(const int& id){
-        for(auto& q : received_questions)
+    Question get_recieved_question_by_id(const int &id)
+    {
+        for (auto &q : received_questions)
         {
-            if(q.ID == id)
+            if (q.ID == id)
                 return q;
-            
-            for(auto& t : q.threads)
+
+            for (auto &t : q.threads)
             {
                 if (t.ID == id)
-                    return q;              
+                    return q;
             }
         }
         return Question();
     }
 
-    bool delete_recieved_question(const int& qid) 
+    bool delete_recieved_question(const int &qid)
     {
-        //iterate over all questions and threads
+        // iterate over all questions and threads
         int sz = received_questions.size();
         for (int i = 0; i < sz; i++)
-        { 
+        {
             if (received_questions[i].ID == qid) // if id for a parent question
-            {     
+            {
                 auto it = received_questions.begin();
-                it += i;       
+                it += i;
                 received_questions.erase(it);
                 return true;
             }
-            
+
             int t_sz = received_questions[i].threads.size();
             for (int j = 0; j < t_sz; j++)
             {
-                if(received_questions[i].threads[j].ID == qid) // if id for thread question
+                if (received_questions[i].threads[j].ID == qid) // if id for thread question
                 {
                     received_questions[i].delete_thread(j);
                     return true;
@@ -775,7 +866,7 @@ struct User
         cout << "Error: unable to extract question from id." << endl;
         return false;
     }
-   
+
     bool answer(const string &ans, const int &qid)
     {
         // iterate over the questions
@@ -801,27 +892,28 @@ struct User
         return false;
     }
 
-    void send_new_question(const int& reciever_id, const int& question_id, const string& question){
+    void send_new_question(const int &reciever_id, const int &question_id, const string &question)
+    {
         vector<Thread> empty_threads; // initialize empty vector of threads
-        
-        //hide user
+
+        // hide user
         int user_id = info.user_id;
-        if(info.AQ)
+        if (info.AQ)
             user_id = -1;
         sent_questions.push_back(Question(question_id, user_id, reciever_id, question, "", empty_threads));
     }
 
-    void send_new_thread(const int & thread_id, const int & parent_question_id, const string & question)
+    void send_new_thread(const int &thread_id, const int &parent_question_id, const string &question)
     {
-        for(auto& q : sent_questions)
+        for (auto &q : sent_questions)
         {
-            if(q.ID == parent_question_id)
+            if (q.ID == parent_question_id)
             {
-                //hide user
+                // hide user
                 int uid = info.user_id;
-                if(info.AQ)
+                if (info.AQ)
                     uid = -1;
-                    
+
                 q.threads.push_back(Thread(thread_id, uid, question, ""));
                 return;
             }
@@ -834,6 +926,7 @@ struct System
 {
     Server s;
     User u;
+    Handling h;
 
     void login_Menu()
     {
@@ -843,25 +936,45 @@ struct System
             cout << "Login Menu:\n\t1: Login\n\t2: Sign Up\n";
 
             // prompt choice from user
-            short int choice;
+            char choice[1]{0};
             while (1) // loop until choice is valid
             {
-                cout << "Enter your choice: ";
-                cin >> choice;
-
-                switch (choice)
+                // prompet choice from user and hundle invalid input
+                bool valid = false;
+                while (!valid)
                 {
-                case 1:
+                    cout << "Enter your choice: ";
+                    cin.getline(choice, 2);
+
+                    if (cin.fail())
+                    {
+                        cout << "Error: invalid input\n";
+                        cin.clear();
+                        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    }
+                    else // user input no more than a one character digit
+                    {
+                        valid = true;
+                    }
+                }
+
+                switch (choice[0])
+                {
+                case 49:
                 {
                     while (1) // loop until user entered a valid username and password
                     {
+                        // prompt user name and password
                         string uname, passwd;
-                        cout << "Enter username and password: ";
-                        cin >> uname >> passwd;
+                        cout << "Enter username and password (separated by a space): ";
+                        cin >> uname;
+                        cin.ignore();
+                        getline(cin, passwd);
 
-                        auto [is_valid, user_info] = s.authentication(uname, passwd);
+                        // check if username and password are valid
+                        auto [is_valid_uname_and_passwd, user_info] = s.authentication(uname, passwd);
 
-                        if (!is_valid)
+                        if (!is_valid_uname_and_passwd)
                         {
                             cout << "Erorr: Invalid username or password, please try again\n";
                             continue;
@@ -877,7 +990,7 @@ struct System
                     }
                     break;
                 }
-                case 2:
+                case 50:
                 {
                     // user sign up and prompt to login menu again
                     signup();
@@ -885,7 +998,7 @@ struct System
                 }
                 default:
                 {
-                    cout << "Invalid choice, please enter number from list." << endl;
+                    cout << "Error: invalid input" << endl;
                     continue;
                 }
                 }
@@ -896,29 +1009,132 @@ struct System
 
     void signup()
     {
-        string u_name, passwd, name, email;
+        string u_name{""}, passwd, name, email;
         bool AQ;
 
-        while (1)
+        while (1) // loop until unique username entered
         {
-            cout << "Enter username. (no spaces): ";
-            cin >> u_name;
+            while (1) // loop until valid input entered
+            {
+                char buffer[16]{0};
+                cout << "Enter username. (no spaces): ";
+                cin.getline(buffer, 16);
+
+                try
+                {
+                    h.hundle_word<16>(buffer);
+                }
+                catch (const invalid_argument &e)
+                {
+                    cout << e.what();
+                    if (buffer[0] != 0)                    // buffer is not empty
+                        memset(buffer, 0, sizeof(buffer)); // set buffer
+                    continue;
+                }
+                catch (const length_error &e)
+                {
+                    cout << e.what();
+                    cin.clear();
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    memset(buffer, 0, sizeof(buffer)); // set buffer
+                    continue;
+                }
+                catch (...)
+                {
+                }
+                // copy buffer into u_name
+                for (auto &i : buffer)
+                    if (i != 0)
+                        u_name += i;
+                    else
+                        break;
+
+                break;
+            }
 
             if (s.check_user_name(u_name))
                 break;
 
             cout << "Error: username already in use, please enter another username.\n";
         }
-        cout << "Enter password: ";
-        cin >> passwd;
-        cout << "Enter name: ";
-        cin.ignore();
-        getline(cin, name);
-        cout << "Enter email: ";
-        cin >> email;
-        cout << "Allow annonmus questions. (0 or 1): ";
-        cin >> AQ;
+        // prompt and hundle the password
+        while (1)
+        {
+            cout << "Enter password: ";
+            getline(cin, passwd);
 
+            if (passwd.empty())
+                continue;
+
+            break;
+        }
+        // prompt and hundle the name
+        while (1)
+        {
+            cout << "Enter name: ";
+            getline(cin, name);
+
+            if (name.empty())
+                continue;
+
+            break;
+        }
+        // prompt and hundle the email
+        while (1) // loop until valid input entered
+        {
+            char buffer[24]{0};
+            cout << "Enter email: ";
+            cin.getline(buffer, 24);
+
+            try
+            {
+                h.hundle_email<24>(buffer);
+            }
+            catch (const invalid_argument &e)
+            {
+                cout << e.what();
+                if (buffer[0] != 0)                    // buffer is not empty
+                    memset(buffer, 0, sizeof(buffer)); // set buffer
+                continue;
+            }
+            catch (const length_error &e)
+            {
+                cout << e.what();
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                memset(buffer, 0, sizeof(buffer)); // set buffer
+                continue;
+            }
+            catch (...)
+            {
+            }
+            // copy buffer into email
+            for (auto &i : buffer)
+                if (i != 0)
+                    email += i;
+                else
+                    break;
+
+            break;
+        }
+        // prompt and hundle the AQ configuration
+        bool is_invalid_input = true;
+        while (is_invalid_input)
+        {
+            cout << "Allow annonmus questions. (0 or 1): ";
+            cin >> AQ;
+            if (cin.fail())
+            {
+                cout << "Error: invalid input, please enter 0 or 1.\n";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                continue;
+            }
+            else
+                is_invalid_input = false;
+        }
+
+        // store input data
         auto user_tuple = make_tuple(u_name, passwd, name, email, AQ);
 
         if (s.add_user(user_tuple))
@@ -947,58 +1163,61 @@ struct System
             int choice;
             cout << "Enter Number from list: ";
             cin >> choice;
-    
+
             switch (choice)
             {
-                case 1:
-                {
-                    print_questions_to_me();
-                    break;
-                }
-                
-                case 2:
-                {
-                    print_questions_from_me();
-                    break;
-                }
-                
-                case 3:
-                {
-                    answer_question();
-                    break;
-                }
-                case 4:
-                {
-                    delete_question();
-                    break;
-                }
-                    
-                case 5:
-                {
-                    ask_question();
-                    break;
-                }
-                    
-                case 6:
-                {
-                    list_system_users();
-                    break;
-                }
-                    
-                case 7:
-                {
-                    feed();
-                    break;
-                }
-                    
-                case 8:
-                {
-                    cout << "Logout, You will prompt back to login Menu.\n"
-                        << endl;
-                    break;
-                }
-                default:
-                    cout << "Erorr: invalid Namber! Please choose from list." << endl;
+            case 1:
+            {
+                print_questions_to_me();
+                break;
+            }
+
+            case 2:
+            {
+                print_questions_from_me();
+                break;
+            }
+
+            case 3:
+            {
+                answer_question();
+                break;
+            }
+            case 4:
+            {
+                delete_question();
+                break;
+            }
+
+            case 5:
+            {
+                ask_question();
+                break;
+            }
+
+            case 6:
+            {
+                list_system_users();
+                break;
+            }
+
+            case 7:
+            {
+                feed();
+                break;
+            }
+
+            case 8:
+            {
+                cout << "Logout, You will prompt back to login Menu." << endl;
+                break;
+            }
+            default:
+                cout << "Erorr: invalid Namber! Please choose from list." << endl;
+            }
+            if (choice == 8) // choice is logout
+            {
+                break;
             }
         }
     }
@@ -1042,19 +1261,20 @@ struct System
             return;
         }
 
-        if(q.ID == qid)
+        if (q.ID == qid)
         {
             q.print_without_thread();
             cout << "\n";
 
             if (q.answer != "")
-            cout << "note: Already answered. Answer will be apdated." << endl;
+                cout << "note: Already answered. Answer will be apdated." << endl;
         }
-        
-        else{
-            for(auto& t : q.threads)
+
+        else
+        {
+            for (auto &t : q.threads)
             {
-                if(t.ID == qid)
+                if (t.ID == qid)
                 {
                     cout << "parent question:\n";
                     q.print_without_thread();
@@ -1066,13 +1286,21 @@ struct System
                 }
             }
         }
-        
 
         // prompt answer
         string answer{""};
         cout << "Enter Answer: ";
         cin.ignore();
-        getline(cin, answer);
+        while (1)
+        {
+            getline(cin, answer);
+            if (answer.empty())
+            {
+                cout << "Error: answer can't be empty, please enter your answer again: ";
+                continue;
+            }
+            break;
+        }
 
         if (!u.answer(answer, qid)) // local answering
             return;
@@ -1094,10 +1322,10 @@ struct System
             return;
         }
 
-        if(!s.delete_question(qid))
+        if (!s.delete_question(qid))
             cout << "question is not deleted globally." << endl;
-        
-        if(!u.delete_recieved_question(qid))
+
+        if (!u.delete_recieved_question(qid))
             cout << "question is not deleted locally." << endl;
     }
 
@@ -1117,19 +1345,28 @@ struct System
         cout << "For thread question: Enter question id or -1 for new question: ";
         cin >> qid;
         cout << " Enter Question text: ";
-        string question;          
+        string question;
         cin.ignore();
-        getline(cin, question);
-
-        if (qid == -1)// if new parent question
+        while (1)
         {
-            auto[is_inserted, qid] = s.insert_new_question(u.info.user_id, to_uid, question); // add new question globally
-            if(is_inserted)
-                u.send_new_question(to_uid, qid, question);// add new question locally
-    
+            getline(cin, question);
+            if (question.empty())
+            {
+                cout << "Error: question can't be empty, please enter your question again: ";
+                continue;
+            }
+            break;
+        }
+
+        if (qid == -1) // if new parent question
+        {
+            auto [is_inserted, qid] = s.insert_new_question(u.info.user_id, to_uid, question); // add new question globally
+            if (is_inserted)
+                u.send_new_question(to_uid, qid, question); // add new question locally
+
             else
-                cout << "Error: New Question is not added." << endl; 
-            
+                cout << "Error: New Question is not added." << endl;
+
             return;
         }
 
@@ -1140,10 +1377,10 @@ struct System
             return;
         }
 
-        auto[is_inserted, tid] = s.insert_new_thread(qid, u.info.user_id, to_uid, question);// insert global thread
-        if(is_inserted)
+        auto [is_inserted, tid] = s.insert_new_thread(qid, u.info.user_id, to_uid, question); // insert global thread
+        if (is_inserted)
         {
-            u.send_new_thread(tid, qid, question);// insert local thread
+            u.send_new_thread(tid, qid, question); // insert local thread
             return;
         }
 
@@ -1199,7 +1436,7 @@ struct System
 int main()
 {
     System sys;
-    sys.login_Menu();
-
+    // sys.login_Menu();
+    sys.signup();
     return 0;
 }
